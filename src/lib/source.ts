@@ -27,6 +27,16 @@ export function resolveSourceUrl(
   )
 }
 
+export function watchHref(
+  media: MediaType,
+  id: number,
+  season?: number,
+  episode?: number,
+): string {
+  if (media !== 'tv') return `/watch/movie/${id}`
+  return `/watch/tv/${id}?season=${season ?? 1}&episode=${episode ?? 1}`
+}
+
 export function youtubeEmbedUrl(key: string): string {
   return `https://www.youtube-nocookie.com/embed/${key}?autoplay=1&rel=0&modestbranding=1`
 }

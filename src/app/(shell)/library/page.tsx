@@ -6,6 +6,7 @@ import { PosterCard } from '@/components/PosterCard'
 import { Grid } from '@/components/Row'
 import { Empty } from '@/components/states'
 import { episodeCode, relativeTime } from '@/lib/format'
+import { watchHref } from '@/lib/source'
 import { useDocumentTitle } from '@/lib/seo'
 
 export default function LibraryPage() {
@@ -61,6 +62,12 @@ export default function LibraryPage() {
               <PosterCard
                 key={`${entry.media}:${entry.id}`}
                 {...entry}
+                href={watchHref(
+                  entry.media,
+                  entry.id,
+                  entry.season,
+                  entry.episode,
+                )}
                 progress={
                   entry.episode && entry.totalEpisodes
                     ? entry.episode / entry.totalEpisodes

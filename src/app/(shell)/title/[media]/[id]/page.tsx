@@ -6,8 +6,10 @@ import { redirect, useParams, useRouter } from 'next/navigation'
 import { Bookmark, BookmarkCheck, Play, Star } from 'lucide-react'
 import { useSeason, useTitle } from '@/lib/queries'
 import { usePrefs } from '@/lib/prefs-context'
+import { watchHref } from '@/lib/source'
 import {
   backdrop,
+  episodeCode,
   poster,
   profile,
   rating,
@@ -26,18 +28,28 @@ import { keyOf } from '@/lib/library-doc'
 import type { MediaType, TitleDetail } from '@/lib/types'
 
 function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
-  const { toggleSaved, saved } = useLibrary()
-  const entry = saved[keyOf(media, detail.id)]
+  const { toggleSaved, saved, history } = useLibrary()
+  const key = keyOf(media, detail.id)
+  const entry = saved[key]
   const isSaved = Boolean(entry && !entry.deletedAt)
+
+  const watched = history[key]
+  const resume = watched && !watched.deletedAt ? watched : undefined
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Link
-        href={`/watch/${media}/${detail.id}${media === 'tv' ? '?season=1&episode=1' : ''}`}
+        href={watchHref(media, detail.id, resume?.season, resume?.episode)}
         className="label inline-flex items-center gap-2 rounded-xs bg-amber px-4 py-2 text-2xs text-ink transition-opacity hover:opacity-90"
       >
         <Play size={12} className="fill-ink" />
-        {media === 'tv' ? 'Start series' : 'Play'}
+        {!resume
+          ? media === 'tv'
+            ? 'Start series'
+            : 'Play'
+          : media === 'tv' && resume.season !== undefined
+            ? `Resume ${episodeCode(resume.season, resume.episode ?? 1)}`
+            : 'Resume'}
       </Link>
 
       <button
@@ -153,7 +165,12 @@ function Episodes({ detail }: { detail: TitleDetail }) {
               type="button"
               onClick={() =>
                 router.push(
-                  `/watch/tv/${detail.id}?season=${episode.season_number}&episode=${episode.episode_number}`,
+                  watchHref(
+                    'tv',
+                    detail.id,
+                    episode.season_number,
+                    episode.episode_number,
+                  ),
                 )
               }
               className="group flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-surface/50"

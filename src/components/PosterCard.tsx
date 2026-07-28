@@ -13,6 +13,7 @@ interface PosterCardProps {
   score?: number
   progress?: number
   caption?: string
+  href?: string
 }
 
 export function PosterCard({
@@ -24,12 +25,13 @@ export function PosterCard({
   score,
   progress,
   caption,
+  href,
 }: PosterCardProps) {
   const src = poster(posterPath)
 
   return (
     <Link
-      href={`/title/${media}/${id}`}
+      href={href ?? `/title/${media}/${id}`}
       className="group block w-full focus-visible:outline-offset-4"
     >
       <div className="relative overflow-hidden rounded-sm bg-surface ring-1 ring-line transition duration-300 ease-out-soft group-hover:ring-mist/40">

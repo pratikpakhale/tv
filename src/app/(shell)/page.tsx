@@ -9,6 +9,7 @@ import { Grid, Row, RowItem } from '@/components/Row'
 import { SkeletonRow } from '@/components/states'
 import { useContinueWatching, useLibrary } from '@/store/library'
 import { episodeCode } from '@/lib/format'
+import { watchHref } from '@/lib/source'
 import type { TitleSummary } from '@/lib/types'
 
 function Shelf({
@@ -71,6 +72,12 @@ function ContinueWatching() {
               title={entry.title}
               posterPath={entry.posterPath}
               year={entry.year}
+              href={watchHref(
+                entry.media,
+                entry.id,
+                entry.season,
+                entry.episode,
+              )}
               progress={
                 entry.episode && entry.totalEpisodes
                   ? entry.episode / entry.totalEpisodes
