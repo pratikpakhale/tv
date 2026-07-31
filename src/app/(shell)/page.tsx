@@ -1,15 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { X } from 'lucide-react'
 import { useShelf, useTrending } from '@/lib/queries'
 import { tmdb } from '@/lib/tmdb'
-import { PosterCard, TitleCard } from '@/components/PosterCard'
+import { TitleCard } from '@/components/PosterCard'
+import { HistoryCard } from '@/components/HistoryCard'
 import { Grid, Row, RowItem } from '@/components/Row'
 import { SkeletonRow } from '@/components/states'
-import { useContinueWatching, useLibrary } from '@/store/library'
+import { useContinueWatching } from '@/store/library'
 import { episodeCode } from '@/lib/format'
-import { watchHref } from '@/lib/source'
 import type { TitleSummary } from '@/lib/types'
 
 function Shelf({
@@ -58,46 +57,20 @@ function Shelf({
 
 function ContinueWatching() {
   const entries = useContinueWatching()
-  const forget = useLibrary((state) => state.forget)
   if (!entries.length) return null
 
   return (
     <Row heading="Pick up where you left off">
       {entries.slice(0, 12).map((entry) => (
         <RowItem key={`${entry.media}:${entry.id}`}>
-          <div className="relative">
-            <PosterCard
-              id={entry.id}
-              media={entry.media}
-              title={entry.title}
-              posterPath={entry.posterPath}
-              year={entry.year}
-              href={watchHref(
-                entry.media,
-                entry.id,
-                entry.season,
-                entry.episode,
-              )}
-              progress={
-                entry.episode && entry.totalEpisodes
-                  ? entry.episode / entry.totalEpisodes
-                  : undefined
-              }
-              caption={
-                entry.season !== undefined && entry.episode !== undefined
-                  ? episodeCode(entry.season, entry.episode)
-                  : entry.year
-              }
-            />
-            <button
-              type="button"
-              aria-label={`Remove ${entry.title} from continue watching`}
-              onClick={() => forget(entry.media, entry.id)}
-              className="absolute top-1.5 left-1.5 grid size-5 place-items-center rounded-xs bg-ink/85 text-dim opacity-0 backdrop-blur-sm transition hover:text-paper focus-visible:opacity-100 group-hover:opacity-100"
-            >
-              <X size={11} />
-            </button>
-          </div>
+          <HistoryCard
+            entry={entry}
+            caption={
+              entry.season !== undefined && entry.episode !== undefined
+                ? episodeCode(entry.season, entry.episode)
+                : entry.year
+            }
+          />
         </RowItem>
       ))}
     </Row>

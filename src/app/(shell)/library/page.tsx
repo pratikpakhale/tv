@@ -1,18 +1,54 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useContinueWatching, useLibrary, useSavedTitles } from '@/store/library'
 import { PosterCard } from '@/components/PosterCard'
+import { HistoryCard } from '@/components/HistoryCard'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Grid } from '@/components/Row'
 import { Empty } from '@/components/states'
 import { episodeCode, relativeTime } from '@/lib/format'
-import { watchHref } from '@/lib/source'
 import { useDocumentTitle } from '@/lib/seo'
+
+/**
+ * Confirmed, because clearing is a tombstone sweep that the next sync pushes to
+ * every other device. There is no undo: the merge in `library-doc.ts` decides on
+ * timestamps, and a restored entry keeps its original `watchedAt`, so the newer
+ * tombstone would win and take the entries away again.
+ */
+function ClearHistory({ count }: { count: number }) {
+  const clearHistory = useLibrary((state) => state.clearHistory)
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="label text-2xs text-dim transition-colors hover:text-amber"
+      >
+        Clear
+      </button>
+
+      <ConfirmDialog
+        open={open}
+        title="Clear watch history?"
+        body={`All ${count} ${count === 1 ? 'entry goes' : 'entries go'}, here and on every other device you are signed in on. This cannot be undone.`}
+        confirmLabel="Clear history"
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {
+          clearHistory()
+          setOpen(false)
+        }}
+      />
+    </>
+  )
+}
 
 export default function LibraryPage() {
   const saved = useSavedTitles()
   const history = useContinueWatching()
-  const clearHistory = useLibrary((state) => state.clearHistory)
 
   useDocumentTitle('Library')
 
@@ -47,32 +83,15 @@ export default function LibraryPage() {
 
       {history.length > 0 && (
         <section className="space-y-3">
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
             <h2 className="eyebrow">Recent · {history.length}</h2>
-            <button
-              type="button"
-              onClick={clearHistory}
-              className="label text-2xs text-dim transition-colors hover:text-amber"
-            >
-              Clear
-            </button>
+            <ClearHistory count={history.length} />
           </div>
           <Grid>
             {history.map((entry) => (
-              <PosterCard
+              <HistoryCard
                 key={`${entry.media}:${entry.id}`}
-                {...entry}
-                href={watchHref(
-                  entry.media,
-                  entry.id,
-                  entry.season,
-                  entry.episode,
-                )}
-                progress={
-                  entry.episode && entry.totalEpisodes
-                    ? entry.episode / entry.totalEpisodes
-                    : undefined
-                }
+                entry={entry}
                 caption={
                   entry.season !== undefined && entry.episode !== undefined
                     ? `${episodeCode(entry.season, entry.episode)} · ${relativeTime(entry.watchedAt)}`
