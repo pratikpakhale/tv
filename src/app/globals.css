@@ -64,6 +64,43 @@
     text-wrap: balance;
   }
 
+  /* Tailwind v4's preflight gives buttons `cursor: default`. Anything that
+     answers a click gets the hand back, listed by role rather than by class so
+     it keeps holding as components are added. */
+  a[href],
+  button,
+  summary,
+  select,
+  label:has(> input[type='checkbox']),
+  label:has(> input[type='radio']),
+  input[type='button'],
+  input[type='checkbox'],
+  input[type='color'],
+  input[type='file'],
+  input[type='radio'],
+  input[type='range'],
+  input[type='reset'],
+  input[type='submit'],
+  ::file-selector-button,
+  [role='button'],
+  [role='checkbox'],
+  [role='link'],
+  [role='menuitem'],
+  [role='menuitemcheckbox'],
+  [role='menuitemradio'],
+  [role='option'],
+  [role='radio'],
+  [role='switch'],
+  [role='tab'] {
+    cursor: pointer;
+  }
+
+  /* After the block above, so the disabled form of the same control wins. */
+  :disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-amber);
     outline-offset: 2px;
