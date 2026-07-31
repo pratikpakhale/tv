@@ -61,27 +61,34 @@ sees a credential.
 
 ## Playback
 
-The player is source-agnostic — it plays whatever you point it at. The one thing
-it knows on its own is YouTube trailers, which come free with the catalog.
+A **source** is where playback bytes come from. The app ships a list of them in
+[`src/lib/source-registry.ts`](src/lib/source-registry.ts), with one marked as
+the default; pick a different one on the **Settings** page and the choice
+follows your account, not this browser.
 
-Set a URL template on the **Settings** page — it is stored on your account, not
-in this browser — and the app fills in the placeholders:
+The listed hosts are mirrors of one backend. Domains get blocked, so the player
+has a **Source** button (`S`) that swaps hosts for the title you are watching
+without leaving the page. That override rides on the URL as `?source=<id>` and
+is forgotten when you leave — it does not change your default. Editing the
+registry is a one-line change: drop a dead host, add a live one.
 
-```
-https://your-backend.example/{type}/{tmdb}
-```
+Anything that renders in an iframe can be a source. Choosing **Custom** on the
+Settings page gives you two URL templates of your own, filled in per title:
 
 | Placeholder | Value                                            |
 | ----------- | ------------------------------------------------ |
 | `{type}`    | `movie` or `tv`                                  |
 | `{tmdb}`    | TMDB numeric id                                  |
-| `{imdb}`    | IMDb id, e.g. `tt0111161` (empty if not on file) |
-| `{season}`  | season number, TV only                           |
-| `{episode}` | episode number, TV only                          |
+| `{imdb}`    | IMDb id, e.g. `tt0111161`                        |
+| `{season}`  | season number, series only                       |
+| `{episode}` | episode number, series only                      |
 
-Films and series get separate fields, because backends often need different
-shapes for the two. Anything that renders in an iframe works — a self-hosted
-media server, an HLS gateway, your own signed-URL service.
+Films and series get separate templates because backends usually need different
+shapes for the two. The film template is required; leave the series one blank
+for a backend that only carries films, and it is skipped for series. If a
+placeholder cannot be filled — `{imdb}` on a title TMDB has no IMDb id for — the
+source is treated as unable to play that title rather than loading a URL with a
+hole in it, and the player says so with the switcher one click away.
 
 The resolved URL gets `autoplay=1` appended, plus `autonext=1` for series, since
 almost every embed backend reads those and a player that waits for a second
@@ -91,13 +98,10 @@ click reads as broken. Put the parameter in your own template to override it —
 Trailers are their own thing, not a fallback: every title page has a Trailer
 button when TMDB has one on file, and it opens the player at
 `/watch/{media}/{id}?trailer=1`. Watching one is not recorded as watching the
-title, so trailers stay out of continue watching. Leave the templates blank and
-the app still runs fine — trailers play, and each title links out to the
-licensed streaming services that carry it.
+title, so trailers stay out of continue watching.
 
-The `NEXT_PUBLIC_SOURCE_URL*` and `NEXT_PUBLIC_REGION` env vars are still read,
-but only as the defaults a brand-new account starts from. Once you save on the
-Settings page, your account's values win.
+`NEXT_PUBLIC_REGION` is read only as the default a brand-new account starts
+from. Once you save on the Settings page, your account's value wins.
 
 ## Library
 

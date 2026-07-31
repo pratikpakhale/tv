@@ -16,3 +16,4 @@ choices nobody debated.
 | ------ | -------- |
 | [0001](0001-adopt-a-server-tier.md) | Adopt a server tier: Next.js and Clerk |
 | [0002](0002-where-user-data-lives.md) | Where user data lives: prefs in Clerk, library in Blob |
+| [0003](0003-ship-a-source-registry.md) | Ship a source registry instead of a blank template field |

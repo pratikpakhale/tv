@@ -1,3 +1,11 @@
+import { isKnownSourceId, type Prefs } from './prefs'
+import {
+  CUSTOM_SOURCE_ID,
+  defaultSource,
+  findSource,
+  SOURCES,
+  type Source,
+} from './source-registry'
 import type { MediaType, Video } from './types'
 
 interface SourceRequest {
@@ -8,6 +16,10 @@ interface SourceRequest {
   episode?: number
 }
 
+/**
+ * Null rather than a URL with a hole in it: `{imdb}` on a title TMDB has no
+ * IMDb id for would otherwise load a broken embed that looks like a dead host.
+ */
 export function resolveSourceUrl(
   template: string,
   request: SourceRequest,
@@ -22,11 +34,48 @@ export function resolveSourceUrl(
     episode: request.episode === undefined ? '' : String(request.episode),
   }
 
-  const filled = template.replace(/\{(\w+)\}/g, (match, key: string) =>
-    key in values ? encodeURIComponent(values[key]) : match,
-  )
+  let unresolved = false
+  const filled = template.replace(/\{(\w+)\}/g, (match, key: string) => {
+    if (!(key in values)) return match
+    if (!values[key]) {
+      unresolved = true
+      return ''
+    }
+    return encodeURIComponent(values[key])
+  })
+
+  if (unresolved) return null
 
   return withPlaybackDefaults(filled, request.media)
+}
+
+export function resolveForSource(
+  source: Source,
+  request: SourceRequest,
+): string | null {
+  const template = request.media === 'tv' ? source.series : source.movie
+  return resolveSourceUrl(template ?? '', request)
+}
+
+function customSource(prefs: Prefs): Source {
+  return {
+    id: CUSTOM_SOURCE_ID,
+    label: 'Custom',
+    movie: prefs.customSourceMovie,
+    series: prefs.customSourceSeries || undefined,
+  }
+}
+
+export function sourceOptions(prefs: Prefs): Source[] {
+  return [...SOURCES, customSource(prefs)]
+}
+
+export function activeSource(prefs: Prefs, overrideId?: string | null): Source {
+  const id =
+    overrideId && isKnownSourceId(overrideId) ? overrideId : prefs.sourceId
+
+  if (id === CUSTOM_SOURCE_ID) return customSource(prefs)
+  return findSource(id) ?? defaultSource()
 }
 
 /**

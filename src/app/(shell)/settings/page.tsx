@@ -5,6 +5,8 @@ import { useUser } from '@clerk/nextjs'
 import { savePrefs } from '@/app/actions/prefs'
 import { usePrefs } from '@/lib/prefs-context'
 import { useDocumentTitle } from '@/lib/seo'
+import { sourceOptions } from '@/lib/source'
+import { CUSTOM_SOURCE_ID } from '@/lib/source-registry'
 import type { Prefs } from '@/lib/prefs'
 
 const FIELD_CLASS =
@@ -40,6 +42,44 @@ function Field({
   )
 }
 
+function SourceRow({
+  label,
+  hint,
+  selected,
+  onSelect,
+}: {
+  label: string
+  hint?: string
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-3 border-b border-line px-3 py-2.5 transition-colors last:border-b-0 ${
+        selected ? 'bg-surface' : 'hover:bg-surface/50'
+      }`}
+    >
+      <input
+        type="radio"
+        name="source"
+        checked={selected}
+        onChange={onSelect}
+        className="sr-only"
+      />
+      <span
+        aria-hidden
+        className={`size-2 shrink-0 rounded-full ${selected ? 'bg-amber' : 'bg-line'}`}
+      />
+      <span
+        className={`flex-1 truncate font-mono text-xs ${selected ? 'text-paper' : 'text-mist'}`}
+      >
+        {label}
+      </span>
+      {hint && <span className="label shrink-0 text-2xs text-dim">{hint}</span>}
+    </label>
+  )
+}
+
 export default function SettingsPage() {
   const prefs = usePrefs()
   const { user } = useUser()
@@ -51,6 +91,12 @@ export default function SettingsPage() {
   useDocumentTitle('Settings')
 
   useEffect(() => setDraft(prefs), [prefs])
+
+  const options = sourceOptions(draft)
+
+  const dirty = (Object.keys(draft) as (keyof Prefs)[]).some(
+    (key) => draft[key] !== prefs[key],
+  )
 
   const set = (key: keyof Prefs) => (value: string) => {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -87,36 +133,60 @@ export default function SettingsPage() {
           onChange={set('region')}
         />
 
-        <div className="space-y-7 border-t border-line pt-7">
-          <p className="text-sm text-mist">
-            Playback templates. Leave both blank and only trailers play, from
-            the Trailer button on each title page. Placeholders:{' '}
-            <code className="font-mono text-xs text-amber">
-              {'{type} {tmdb} {imdb} {season} {episode}'}
-            </code>
-          </p>
+        <div className="space-y-4 border-t border-line pt-7">
+          <div>
+            <span className="eyebrow">Source</span>
+            <p className="mt-2 text-sm text-mist">
+              Where playback comes from. The listed hosts are mirrors of one
+              backend — switch when one stops answering, from here or from the
+              player.
+            </p>
+          </div>
 
-          <Field
-            label="Film source"
-            hint="Used for movies."
-            value={draft.sourceUrlMovie}
-            placeholder="https://example.com/embed/{type}/{tmdb}"
-            onChange={set('sourceUrlMovie')}
-          />
+          <div className="overflow-hidden rounded-sm border border-line">
+            {options.map((source) => (
+              <SourceRow
+                key={source.id}
+                label={source.label}
+                hint={source.movie && !source.series ? 'Films only' : undefined}
+                selected={draft.sourceId === source.id}
+                onSelect={() => set('sourceId')(source.id)}
+              />
+            ))}
+          </div>
 
-          <Field
-            label="Series source"
-            hint="Used for episodes."
-            value={draft.sourceUrlSeries}
-            placeholder="https://example.com/embed/{type}/{tmdb}/{season}/{episode}"
-            onChange={set('sourceUrlSeries')}
-          />
+          {draft.sourceId === CUSTOM_SOURCE_ID && (
+            <div className="space-y-7 pt-3">
+              <p className="text-sm text-mist">
+                Placeholders:{' '}
+                <code className="font-mono text-xs text-amber">
+                  {'{type} {tmdb} {imdb} {season} {episode}'}
+                </code>
+              </p>
+
+              <Field
+                label="Film template"
+                hint="Required. Films have no season or episode, so those placeholders cannot be used here."
+                value={draft.customSourceMovie}
+                placeholder="https://example.com/embed/{type}/{tmdb}"
+                onChange={set('customSourceMovie')}
+              />
+
+              <Field
+                label="Series template"
+                hint="Optional. Leave blank for a backend that only carries films."
+                value={draft.customSourceSeries}
+                placeholder="https://example.com/embed/{type}/{tmdb}/{season}/{episode}"
+                onChange={set('customSourceSeries')}
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 border-t border-line pt-7">
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !dirty}
             className="label rounded-xs border border-amber bg-amber px-4 py-2 text-2xs text-ink transition-opacity disabled:opacity-40"
           >
             {pending ? 'Saving…' : 'Save'}

@@ -28,6 +28,7 @@ export function EpisodeDrawer({
 
   const [active, setActive] = useState(season)
   const current = useRef<HTMLLIElement>(null)
+  const list = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
     if (open) setActive(season)
@@ -35,8 +36,17 @@ export function EpisodeDrawer({
 
   const query = useSeason(detail.id, active, open && seasons.length > 0)
 
+  /*
+   * Hand-rolled rather than scrollIntoView: that scrolls every scrollable
+   * ancestor, and while the drawer is mid-slide it would drag the player
+   * page itself sideways, pulling the parked panels into view.
+   */
   useEffect(() => {
-    if (open && query.data) current.current?.scrollIntoView({ block: 'center' })
+    const item = current.current
+    const box = list.current
+    if (!open || !query.data || !item || !box) return
+    box.scrollTop =
+      item.offsetTop - box.offsetTop - (box.clientHeight - item.clientHeight) / 2
   }, [open, query.data])
 
   return (
@@ -90,7 +100,10 @@ export function EpisodeDrawer({
           ))}
         </div>
 
-        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto border-t border-line">
+        <ul
+          ref={list}
+          className="min-h-0 flex-1 divide-y divide-line overflow-y-auto border-t border-line"
+        >
           {query.isPending &&
             Array.from({ length: 8 }, (_, index) => (
               <li key={index} className="h-20 animate-pulse bg-surface/40" />

@@ -41,15 +41,30 @@ has not heard about yet, and the merge would resurrect it. Selectors
 (`useSavedTitles`, `useContinueWatching`) filter tombstones out; the merge drops
 them once they are older than the TTL in `library-doc.ts`.
 
-**Prefs** — the account's settings: `region` and the three source fields. Stored
-in Clerk `publicMetadata.prefs`, written only by the `savePrefs` server action,
-read through `usePrefs()`. The `NEXT_PUBLIC_*` env vars are the defaults a fresh
-account starts from, not the live values.
+**Prefs** — the account's settings: `region`, the chosen `sourceId`, and the two
+custom templates. Stored in Clerk `publicMetadata.prefs`, written only by the
+`savePrefs` server action, read through `usePrefs()`. `NEXT_PUBLIC_REGION` is
+the default a fresh account starts from, not the live value.
 
-**Source** — where playback bytes come from. The app is **source-agnostic**: it
-fills a user-supplied URL **template** taken from prefs. "Configured source"
-means a template resolved to a URL; no template means the player has nothing to
-play and says so.
+**Source** — where playback bytes come from: a `{ id, label, movie, series? }`
+entry holding one URL **template** per media type. The app ships a **registry**
+of them in `source-registry.ts` and one is the default; an account selects by
+`id`, so editing a template in code reaches everyone. A source with no `series`
+template is films-only. See [ADR 0003](docs/adr/0003-ship-a-source-registry.md).
+
+**Custom source** — the one account-owned entry, its two templates typed on the
+settings page and held in prefs. Selected by the reserved id `custom`; it is a
+`Source` like any other everywhere downstream.
+
+**Source override** — `?source=<id>` on a watch URL, set by the player's Source
+picker. It wins over `prefs.sourceId` for that playback only and is never
+written back, because a source is switched to get past a blocked host for one
+title, not to change what the account prefers.
+
+**Unservable** — a source that cannot produce a URL for a request: no `series`
+template on a series, or a template using a placeholder that resolves to empty
+(`{imdb}` on a title TMDB has no IMDb id for). `resolveSourceUrl` returns `null`
+rather than a URL with a hole in it; the picker greys the entry out.
 
 **Trailer** — a YouTube video from the catalog, played in the same player under
 `?trailer=1`. It is a separate mode, not a fallback for a missing source: it is
@@ -63,8 +78,10 @@ in-app.
 
 ## Boundaries
 
-- `src/lib/` — TMDB access (`tmdb.ts`), query definitions (`queries.ts`), source
-  template resolution (`source.ts`), prefs shape (`prefs.ts`), the library
+- `src/lib/` — TMDB access (`tmdb.ts`), query definitions (`queries.ts`), the
+  source registry (`source-registry.ts`, data only — the churny list of hosts,
+  kept out of the resolution code), source template resolution and selection
+  (`source.ts`), prefs shape (`prefs.ts`), the library
   document and its merge (`library-doc.ts`), display formatting (`format.ts`),
   shared types. Hooks live here only where they are thin context readers
   (`prefs-context.ts`); nothing else in `src/lib/` renders.
