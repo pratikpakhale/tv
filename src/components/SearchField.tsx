@@ -2,9 +2,10 @@
 
 import { Suspense, useEffect, useId, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { CornerDownLeft, Loader2, Search, Star } from 'lucide-react'
+import { Clock, CornerDownLeft, Loader2, Search, Star, X } from 'lucide-react'
 import { useSearchSuggest } from '@/lib/queries'
 import { useDebounced } from '@/lib/useDebounced'
+import { useRecentSearches } from '@/lib/useRecentSearches'
 import { mediaTypeOf, poster, rating, titleOf, yearOf } from '@/lib/format'
 import type { TitleSummary } from '@/lib/types'
 
@@ -24,6 +25,8 @@ function SearchFieldInner() {
   const input = useRef<HTMLInputElement>(null)
   const listId = useId()
 
+  const { recents, remember, forget, clear } = useRecentSearches()
+
   const query = value.trim()
   const debounced = useDebounced(query)
   const suggest = useSearchSuggest(debounced)
@@ -35,7 +38,9 @@ function SearchFieldInner() {
     )
     .slice(0, MAX_SUGGESTIONS)
 
-  const expanded = open && debounced.length > 1
+  const showRecents = open && !query && recents.length > 0
+  const expanded = showRecents || (open && debounced.length > 1)
+  const optionCount = showRecents ? recents.length : items.length
 
   useEffect(() => {
     setValue(submitted)
@@ -44,7 +49,7 @@ function SearchFieldInner() {
 
   useEffect(() => {
     setActive(-1)
-  }, [debounced])
+  }, [debounced, recents.length])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -63,13 +68,20 @@ function SearchFieldInner() {
     input.current?.blur()
   }
 
-  const seeAll = () => {
-    if (!query) return
-    router.push(`/search?q=${encodeURIComponent(query)}`)
+  const runSearch = (raw: string) => {
+    const term = raw.trim()
+    if (!term) return
+    remember(term)
+    setValue(term)
+    router.push(`/search?q=${encodeURIComponent(term)}`)
     dismiss()
   }
 
+  const seeAll = () => runSearch(query)
+
+  /* The title, not the fragment that found it — "inters" is no use to come back to. */
   const choose = (item: TitleSummary) => {
+    remember(titleOf(item))
     router.push(`/title/${mediaTypeOf(item)}/${item.id}`)
     dismiss()
   }
@@ -80,20 +92,27 @@ function SearchFieldInner() {
       else input.current?.blur()
       return
     }
-    if (event.key === 'Enter' && active >= 0 && items[active]) {
-      event.preventDefault()
-      choose(items[active])
-      return
+    if (event.key === 'Enter' && active >= 0) {
+      if (showRecents && recents[active]) {
+        event.preventDefault()
+        runSearch(recents[active])
+        return
+      }
+      if (!showRecents && items[active]) {
+        event.preventDefault()
+        choose(items[active])
+        return
+      }
     }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      if (!items.length) return
+      if (!optionCount) return
       event.preventDefault()
       setOpen(true)
       const step = event.key === 'ArrowDown' ? 1 : -1
       setActive((current) => {
         const next = current + step
-        if (next < -1) return items.length - 1
-        if (next > items.length - 1) return -1
+        if (next < -1) return optionCount - 1
+        if (next > optionCount - 1) return -1
         return next
       })
     }
@@ -145,7 +164,61 @@ function SearchFieldInner() {
 
       {expanded && (
         <div className="absolute inset-x-0 top-full z-30 mt-1.5 overflow-hidden rounded-sm border border-line bg-surface shadow-xl shadow-ink/60">
-          {items.length ? (
+          {showRecents ? (
+            <>
+              <div className="flex items-center justify-between gap-3 border-b border-line px-3 py-2">
+                <span className="eyebrow">Recent</span>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    clear()
+                  }}
+                  className="label text-2xs text-dim transition-colors hover:text-flare"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <ul id={listId} role="listbox" aria-label="Recent searches">
+                {recents.map((term, index) => (
+                  <li
+                    key={term}
+                    id={`${listId}-${index}`}
+                    role="option"
+                    aria-selected={index === active}
+                    onMouseDown={(event) => {
+                      event.preventDefault()
+                      runSearch(term)
+                    }}
+                    onMouseEnter={() => setActive(index)}
+                    className={`group/recent flex items-center gap-3 px-3 py-2 transition-colors ${
+                      index === active ? 'bg-raise' : ''
+                    }`}
+                  >
+                    <Clock size={13} className="shrink-0 text-dim" />
+                    <span className="min-w-0 flex-1 truncate text-sm text-paper/90">
+                      {term}
+                    </span>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      aria-label={`Remove ${term} from recent searches`}
+                      onMouseDown={(event) => {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        forget(term)
+                      }}
+                      className="grid size-5 shrink-0 place-items-center rounded-xs text-dim opacity-0 transition-colors hover:text-flare group-hover/recent:opacity-100"
+                    >
+                      <X size={11} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : items.length ? (
             <ul id={listId} role="listbox" aria-label="Search suggestions">
               {items.map((item, index) => {
                 const media = mediaTypeOf(item)
@@ -161,7 +234,7 @@ function SearchFieldInner() {
                       choose(item)
                     }}
                     onMouseEnter={() => setActive(index)}
-                    className={`flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2 transition-colors ${
                       index === active ? 'bg-raise' : ''
                     }`}
                   >
@@ -201,23 +274,25 @@ function SearchFieldInner() {
             </p>
           )}
 
-          <button
-            type="button"
-            onMouseDown={(event) => {
-              event.preventDefault()
-              seeAll()
-            }}
-            className="group/all flex w-full items-center gap-2.5 border-t border-line px-3 py-2.5 text-left transition-colors hover:bg-raise"
-          >
-            <span className="label shrink-0 text-2xs text-dim">See all</span>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-paper">
-              {query}
-            </span>
-            <CornerDownLeft
-              size={11}
-              className="shrink-0 text-dim transition-colors group-hover/all:text-amber"
-            />
-          </button>
+          {!showRecents && (
+            <button
+              type="button"
+              onMouseDown={(event) => {
+                event.preventDefault()
+                seeAll()
+              }}
+              className="group/all flex w-full items-center gap-2.5 border-t border-line px-3 py-2.5 text-left transition-colors hover:bg-raise"
+            >
+              <span className="label shrink-0 text-2xs text-dim">See all</span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-paper">
+                {query}
+              </span>
+              <CornerDownLeft
+                size={11}
+                className="shrink-0 text-dim transition-colors group-hover/all:text-amber"
+              />
+            </button>
+          )}
         </div>
       )}
     </form>
