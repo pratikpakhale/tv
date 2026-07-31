@@ -61,9 +61,8 @@ sees a credential.
 
 ## Playback
 
-The player is source-agnostic. It ships knowing about exactly one thing —
-YouTube trailers, which come free with the catalog — and otherwise plays
-whatever you point it at.
+The player is source-agnostic — it plays whatever you point it at. The one thing
+it knows on its own is YouTube trailers, which come free with the catalog.
 
 Set a URL template on the **Settings** page — it is stored on your account, not
 in this browser — and the app fills in the placeholders:
@@ -84,8 +83,17 @@ Films and series get separate fields, because backends often need different
 shapes for the two. Anything that renders in an iframe works — a self-hosted
 media server, an HLS gateway, your own signed-URL service.
 
-Leave them blank and the app runs fine: it plays trailers and links out to the
-licensed streaming services that carry each title.
+The resolved URL gets `autoplay=1` appended, plus `autonext=1` for series, since
+almost every embed backend reads those and a player that waits for a second
+click reads as broken. Put the parameter in your own template to override it —
+`…/{tmdb}?autoplay=0` disables autoplay, and whatever you set is left alone.
+
+Trailers are their own thing, not a fallback: every title page has a Trailer
+button when TMDB has one on file, and it opens the player at
+`/watch/{media}/{id}?trailer=1`. Watching one is not recorded as watching the
+title, so trailers stay out of continue watching. Leave the templates blank and
+the app still runs fine — trailers play, and each title links out to the
+licensed streaming services that carry it.
 
 The `NEXT_PUBLIC_SOURCE_URL*` and `NEXT_PUBLIC_REGION` env vars are still read,
 but only as the defaults a brand-new account starts from. Once you save on the

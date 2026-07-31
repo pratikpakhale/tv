@@ -89,8 +89,8 @@ export default function SettingsPage() {
 
         <div className="space-y-7 border-t border-line pt-7">
           <p className="text-sm text-mist">
-            Playback templates. Leave both blank and the player shows trailers
-            only. Placeholders:{' '}
+            Playback templates. Leave both blank and only trailers play, from
+            the Trailer button on each title page. Placeholders:{' '}
             <code className="font-mono text-xs text-amber">
               {'{type} {tmdb} {imdb} {season} {episode}'}
             </code>
@@ -110,14 +110,6 @@ export default function SettingsPage() {
             value={draft.sourceUrlSeries}
             placeholder="https://example.com/embed/{type}/{tmdb}/{season}/{episode}"
             onChange={set('sourceUrlSeries')}
-          />
-
-          <Field
-            label="Source label"
-            hint="Name shown on the player's source switcher."
-            value={draft.sourceLabel}
-            placeholder="Configured source"
-            onChange={set('sourceLabel')}
           />
         </div>
 

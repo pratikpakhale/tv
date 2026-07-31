@@ -47,9 +47,14 @@ read through `usePrefs()`. The `NEXT_PUBLIC_*` env vars are the defaults a fresh
 account starts from, not the live values.
 
 **Source** — where playback bytes come from. The app is **source-agnostic**: it
-ships knowing only about YouTube trailers and otherwise fills a user-supplied
-URL **template** taken from prefs. "Configured source" means a template resolved
-to a URL; no template means trailers only.
+fills a user-supplied URL **template** taken from prefs. "Configured source"
+means a template resolved to a URL; no template means the player has nothing to
+play and says so.
+
+**Trailer** — a YouTube video from the catalog, played in the same player under
+`?trailer=1`. It is a separate mode, not a fallback for a missing source: it is
+reached only from a title page's Trailer button, its chrome drops the
+episode controls, and it is never written to history.
 
 **Provider** — a licensed streaming service that carries a title, from TMDB's
 `watch/providers` (JustWatch data, attribution required). A provider is a place

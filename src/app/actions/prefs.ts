@@ -11,7 +11,6 @@ export async function savePrefs(input: Prefs): Promise<{ error?: string }> {
     region: String(input.region ?? '').trim(),
     sourceUrlMovie: String(input.sourceUrlMovie ?? '').trim(),
     sourceUrlSeries: String(input.sourceUrlSeries ?? '').trim(),
-    sourceLabel: String(input.sourceLabel ?? '').trim(),
   }
 
   const problem = prefsProblem(prefs)

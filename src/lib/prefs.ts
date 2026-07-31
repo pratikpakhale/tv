@@ -2,7 +2,6 @@ export interface Prefs {
   region: string
   sourceUrlMovie: string
   sourceUrlSeries: string
-  sourceLabel: string
 }
 
 const SHARED_SOURCE = process.env.NEXT_PUBLIC_SOURCE_URL || ''
@@ -11,7 +10,6 @@ export const PREFS_DEFAULTS: Prefs = {
   region: (process.env.NEXT_PUBLIC_REGION || 'US').toUpperCase(),
   sourceUrlMovie: process.env.NEXT_PUBLIC_SOURCE_URL_MOVIE || SHARED_SOURCE,
   sourceUrlSeries: process.env.NEXT_PUBLIC_SOURCE_URL_SERIES || SHARED_SOURCE,
-  sourceLabel: process.env.NEXT_PUBLIC_SOURCE_LABEL || 'Configured source',
 }
 
 const REGION_PATTERN = /^[a-z]{2}$/i
@@ -33,9 +31,6 @@ export function normalizePrefs(raw: unknown): Prefs {
       stored.sourceUrlSeries,
       PREFS_DEFAULTS.sourceUrlSeries,
     ),
-    sourceLabel:
-      text(stored.sourceLabel, PREFS_DEFAULTS.sourceLabel) ||
-      PREFS_DEFAULTS.sourceLabel,
   }
 }
 

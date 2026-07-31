@@ -1,4 +1,4 @@
-import type { MediaType } from './types'
+import type { MediaType, Video } from './types'
 
 interface SourceRequest {
   media: MediaType
@@ -22,9 +22,33 @@ export function resolveSourceUrl(
     episode: request.episode === undefined ? '' : String(request.episode),
   }
 
-  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+  const filled = template.replace(/\{(\w+)\}/g, (match, key: string) =>
     key in values ? encodeURIComponent(values[key]) : match,
   )
+
+  return withPlaybackDefaults(filled, request.media)
+}
+
+/**
+ * `autoplay` and `autonext` are near-universal across embed backends, and a
+ * player that waits for a second click reads as broken. Set them on unless the
+ * template already has an opinion — writing `?autoplay=0` is how you turn them
+ * off, which keeps the app source-agnostic rather than dictating behaviour.
+ */
+function withPlaybackDefaults(rawUrl: string, media: MediaType): string {
+  let url: URL
+  try {
+    url = new URL(rawUrl)
+  } catch {
+    return rawUrl
+  }
+
+  const defaults = media === 'tv' ? ['autoplay', 'autonext'] : ['autoplay']
+  for (const key of defaults) {
+    if (!url.searchParams.has(key)) url.searchParams.set(key, '1')
+  }
+
+  return url.toString()
 }
 
 export function watchHref(
@@ -35,6 +59,21 @@ export function watchHref(
 ): string {
   if (media !== 'tv') return `/watch/movie/${id}`
   return `/watch/tv/${id}?season=${season ?? 1}&episode=${episode ?? 1}`
+}
+
+export function trailerHref(media: MediaType, id: number): string {
+  return `/watch/${media}/${id}?trailer=1`
+}
+
+export function pickTrailer(videos?: Video[]): Video | undefined {
+  if (!videos?.length) return undefined
+  const youtube = videos.filter((video) => video.site === 'YouTube')
+  return (
+    youtube.find((video) => video.type === 'Trailer' && video.official) ??
+    youtube.find((video) => video.type === 'Trailer') ??
+    youtube.find((video) => video.type === 'Teaser') ??
+    youtube[0]
+  )
 }
 
 export function youtubeEmbedUrl(key: string): string {

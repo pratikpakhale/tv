@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { redirect, useParams, useRouter } from 'next/navigation'
-import { Bookmark, BookmarkCheck, Play, Star } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Clapperboard, Play, Star } from 'lucide-react'
 import { useSeason, useTitle } from '@/lib/queries'
 import { usePrefs } from '@/lib/prefs-context'
-import { watchHref } from '@/lib/source'
+import { pickTrailer, trailerHref, watchHref } from '@/lib/source'
 import {
   backdrop,
   episodeCode,
@@ -35,6 +35,7 @@ function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
 
   const watched = history[key]
   const resume = watched && !watched.deletedAt ? watched : undefined
+  const trailer = pickTrailer(detail.videos?.results)
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -68,6 +69,16 @@ function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
         {isSaved ? <BookmarkCheck size={12} /> : <Bookmark size={12} />}
         {isSaved ? 'Saved' : 'Save'}
       </button>
+
+      {trailer && (
+        <Link
+          href={trailerHref(media, detail.id)}
+          className="label inline-flex items-center gap-2 rounded-xs border border-line px-4 py-2 text-2xs text-mist transition-colors hover:border-mist/40 hover:text-paper"
+        >
+          <Clapperboard size={12} />
+          Trailer
+        </Link>
+      )}
     </div>
   )
 }
