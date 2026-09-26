@@ -95,6 +95,12 @@ almost every embed backend reads those and a player that waits for a second
 click reads as broken. Put the parameter in your own template to override it —
 `…/{tmdb}?autoplay=0` disables autoplay, and whatever you set is left alone.
 
+Sources play in a sandboxed iframe that refuses pop-ups, new tabs and
+redirects of the page, which is how these hosts' ads get in. It cannot touch
+ads drawn inside the player itself; those are the host's own pixels. If a host
+starts refusing to play while caged, **Block pop-ups** in the Source panel
+turns the sandbox off for that title (`?sandbox=0`).
+
 Trailers are their own thing, not a fallback: every title page has a Trailer
 button when TMDB has one on file, and it opens the player at
 `/watch/{media}/{id}?trailer=1`. Watching one is not recorded as watching the
