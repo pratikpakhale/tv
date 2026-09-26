@@ -100,20 +100,6 @@ function withPlaybackDefaults(rawUrl: string, media: MediaType): string {
   return url.toString()
 }
 
-/**
- * The cage every source plays in. What is left out is what the ad networks on
- * these hosts use: `allow-popups` (new tabs on the first tap), the
- * `allow-top-navigation` family (redirecting this page away) and
- * `allow-modals` (alert spam). Ads drawn inside the player itself are the
- * host's own pixels and cannot be reached from here.
- *
- * `allow-same-origin` stays, because the mirrors detect an opaque origin and
- * swap the player for a refusal page. Kept with `allow-scripts` on a
- * cross-origin frame it grants nothing over this page.
- */
-export const SOURCE_SANDBOX =
-  'allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock'
-
 export function watchHref(
   media: MediaType,
   id: number,

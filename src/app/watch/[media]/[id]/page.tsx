@@ -26,7 +26,6 @@ import {
   activeSource,
   pickTrailer,
   resolveForSource,
-  SOURCE_SANDBOX,
   sourceOptions,
   trailerHref,
   youtubeEmbedUrl,
@@ -101,7 +100,6 @@ function Watch({
   const season = Number(params.get('season') ?? 1)
   const episode = Number(params.get('episode') ?? 1)
   const isTrailer = params.get('trailer') === '1'
-  const sandboxed = params.get('sandbox') !== '0'
 
   const query = useTitle(mediaType, numericId)
   const seasonQuery = useSeason(
@@ -207,18 +205,6 @@ function Watch({
     (id: string) => {
       const updated = new URLSearchParams(params.toString())
       updated.set('source', id)
-      router.replace(`${pathname}?${updated}`, { scroll: false })
-      setPanel(null)
-    },
-    [params, pathname, router],
-  )
-
-  /* Same shape as the source override: in the URL, this playback only. */
-  const setSandboxed = useCallback(
-    (on: boolean) => {
-      const updated = new URLSearchParams(params.toString())
-      if (on) updated.delete('sandbox')
-      else updated.set('sandbox', '0')
       router.replace(`${pathname}?${updated}`, { scroll: false })
       setPanel(null)
     },
@@ -435,9 +421,8 @@ function Watch({
       <div className="relative isolate min-h-0 flex-1 overflow-clip">
         {playing ? (
           <iframe
-            key={`${playing}|${sandboxed}`}
+            key={playing}
             src={playing}
-            sandbox={!isTrailer && sandboxed ? SOURCE_SANDBOX : undefined}
             title={detail ? titleOf(detail) : 'Player'}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
@@ -517,8 +502,6 @@ function Watch({
               resolveForSource(candidate, request) !== null
             }
             onSelect={selectSource}
-            sandboxed={sandboxed}
-            onSandboxedChange={setSandboxed}
           />
         )}
 

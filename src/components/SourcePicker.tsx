@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShieldCheck, ShieldOff, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { MediaType } from '@/lib/types'
 import type { Source } from '@/lib/source-registry'
 
@@ -19,8 +19,6 @@ export function SourcePicker({
   media,
   playable,
   onSelect,
-  sandboxed,
-  onSandboxedChange,
 }: {
   open: boolean
   onClose: () => void
@@ -29,8 +27,6 @@ export function SourcePicker({
   media: MediaType
   playable: (source: Source) => boolean
   onSelect: (id: string) => void
-  sandboxed: boolean
-  onSandboxedChange: (on: boolean) => void
 }) {
   return (
     <>
@@ -74,7 +70,7 @@ export function SourcePicker({
           .
         </p>
 
-        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto overscroll-contain border-t border-line">
+        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto overscroll-contain border-t border-line pb-safe">
           {sources.map((source) => {
             const active = source.id === activeId
             const disabled = !playable(source)
@@ -113,42 +109,6 @@ export function SourcePicker({
             )
           })}
         </ul>
-
-        <div className="shrink-0 border-t border-line px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={sandboxed}
-            onClick={() => onSandboxedChange(!sandboxed)}
-            className="flex w-full items-center gap-3 py-1.5 text-left active:opacity-70"
-          >
-            {sandboxed ? (
-              <ShieldCheck size={16} className="shrink-0 text-amber" />
-            ) : (
-              <ShieldOff size={16} className="shrink-0 text-flare" />
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm text-paper">Block pop-ups</span>
-              <span className="block text-2xs text-dim">
-                {sandboxed
-                  ? 'Stops new tabs and redirects. Turn off only if the player refuses to load.'
-                  : 'Off for this title. Ads can open tabs and redirect.'}
-              </span>
-            </span>
-            <span
-              aria-hidden
-              className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
-                sandboxed ? 'bg-amber' : 'bg-line'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-ink transition-transform duration-200 ease-out-soft ${
-                  sandboxed ? 'translate-x-4' : ''
-                }`}
-              />
-            </span>
-          </button>
-        </div>
       </aside>
     </>
   )

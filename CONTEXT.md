@@ -61,13 +61,6 @@ picker. It wins over `prefs.sourceId` for that playback only and is never
 written back, because a source is switched to get past a blocked host for one
 title, not to change what the account prefers.
 
-**Sandbox** — the `sandbox` attribute every source iframe plays under
-(`SOURCE_SANDBOX` in `source.ts`): scripts run, but pop-ups, top-level
-redirects and modals are refused, which is how the hosts' ad networks work.
-`?sandbox=0` on a watch URL lifts it for that playback only, like a **source
-override**, for a host that refuses to play caged. Trailers are never
-sandboxed.
-
 **Unservable** — a source that cannot produce a URL for a request: no `series`
 template on a series, or a template using a placeholder that resolves to empty
 (`{imdb}` on a title TMDB has no IMDb id for). `resolveSourceUrl` returns `null`
