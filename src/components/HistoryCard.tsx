@@ -40,7 +40,7 @@ export function HistoryCard({
         aria-label={`Remove ${entry.title} from history`}
         title="Remove from history"
         onClick={() => setConfirming(true)}
-        className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-xs bg-ink/85 text-dim opacity-0 backdrop-blur-sm transition hover:text-flare focus-visible:opacity-100 group-hover/history:opacity-100"
+        className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-xs bg-ink/85 text-dim opacity-0 backdrop-blur-sm transition group-hover/history:opacity-100 hover:text-flare focus-visible:opacity-100 pointer-coarse:size-8 pointer-coarse:text-mist pointer-coarse:opacity-100"
       >
         <X size={12} />
       </button>

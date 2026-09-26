@@ -41,7 +41,7 @@ function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`shrink-0 rounded-xs border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors ${
+      className={`shrink-0 rounded-xs border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors active:opacity-70 pointer-coarse:px-3.5 pointer-coarse:py-2 ${
         active
           ? 'border-amber bg-amber text-ink'
           : 'border-line text-mist hover:border-mist/40 hover:text-paper'
@@ -136,7 +136,7 @@ function Browse({ media }: { media: MediaType }) {
       </div>
 
       <div className="space-y-2">
-        <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
+        <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:px-0">
           {sortOptions.map((sort) => (
             <Chip
               key={sort.value}
@@ -158,7 +158,7 @@ function Browse({ media }: { media: MediaType }) {
           ))}
         </div>
 
-        <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
+        <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:px-0">
           {genres.data?.genres.map((genre) => (
             <Chip
               key={genre.id}

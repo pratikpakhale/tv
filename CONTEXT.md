@@ -90,8 +90,9 @@ in-app.
   `watch/` and the Clerk pages sit outside it. `api/` holds route handlers and
   `actions/` server actions — server-only, the one place secrets are read.
 - `src/proxy.ts` — Next 16's middleware entry point. Everything except
-  `/sign-in` and `/sign-up` requires a session; `/api/*` answers 401 rather than
-  redirecting, so a fetch never parses a sign-in page as JSON.
+  `/sign-in`, `/sign-up` and the service worker's `/~offline` fallback requires
+  a session; `/api/*` answers 401 rather than redirecting, so a fetch never
+  parses a sign-in page as JSON.
 - `src/store/` — the library and its sync loop. The only writable state in the
   app.
 - `src/components/` — presentational; they receive titles, they don't fetch.

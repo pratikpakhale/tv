@@ -64,9 +64,11 @@ function SearchResults() {
               type="button"
               onClick={() => search.fetchNextPage()}
               disabled={search.isFetchingNextPage}
-              className="label mx-auto block border-b border-line pb-1 text-2xs text-mist transition-colors hover:border-amber hover:text-amber"
+              className="label group mx-auto flex min-h-11 items-center px-4 text-2xs text-mist transition-colors hover:text-amber active:text-amber"
             >
-              {search.isFetchingNextPage ? 'Loading' : 'Load more'}
+              <span className="border-b border-line pb-1 transition-colors group-hover:border-amber">
+                {search.isFetchingNextPage ? 'Loading' : 'Load more'}
+              </span>
             </button>
           )}
         </>

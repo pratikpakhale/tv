@@ -26,7 +26,7 @@ function ClearHistory({ count }: { count: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="label text-2xs text-dim transition-colors hover:text-amber"
+        className="label -mr-2 px-2 text-2xs text-dim transition-colors hover:text-amber active:text-amber pointer-coarse:py-3.5"
       >
         Clear
       </button>

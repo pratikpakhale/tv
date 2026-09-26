@@ -47,7 +47,7 @@ export function Row({
 
       <div
         ref={track}
-        className="no-scrollbar -mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1"
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-pl-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 md:-mx-1 md:scroll-pl-1 md:px-1"
       >
         {children}
       </div>

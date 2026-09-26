@@ -43,7 +43,7 @@ export function ConfirmDialog({
       onClick={(event) => {
         if (event.target === dialog.current) onCancel()
       }}
-      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-sm border border-line bg-surface p-0 text-paper backdrop:bg-ink/75"
+      className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-sm border border-line bg-surface p-0 text-paper backdrop:bg-ink/75 max-sm:mb-0 max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-safe"
     >
       <div className="space-y-3 p-5">
         <h2 id={titleId} className="display text-lg font-semibold">
@@ -52,18 +52,19 @@ export function ConfirmDialog({
         <p className="text-sm text-mist">{body}</p>
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-line px-5 py-3">
+      {/* A bottom sheet on phones: full-width buttons where the thumb is. */}
+      <div className="grid grid-cols-2 gap-2 border-t border-line px-5 py-3 sm:flex sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
-          className="label rounded-xs border border-line px-3 py-1.5 text-2xs text-mist transition-colors hover:border-mist/40 hover:text-paper"
+          className="label h-11 rounded-xs border border-line px-3 text-2xs text-mist transition hover:border-mist/40 hover:text-paper active:scale-[0.97] sm:h-auto sm:py-1.5"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className="label rounded-xs bg-flare px-3 py-1.5 text-2xs text-ink transition-opacity hover:opacity-90"
+          className="label h-11 rounded-xs bg-flare px-3 text-2xs text-ink transition hover:opacity-90 active:scale-[0.97] sm:h-auto sm:py-1.5"
         >
           {confirmLabel}
         </button>

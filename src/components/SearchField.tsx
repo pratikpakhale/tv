@@ -149,6 +149,10 @@ function SearchFieldInner() {
         onKeyDown={onKeyDown}
         placeholder="Search films and series"
         aria-label="Search films and series"
+        enterKeyHint="search"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
         className={FIELD_CLASS}
       />
       {suggest.isFetching && query.length > 1 ? (
@@ -157,7 +161,7 @@ function SearchFieldInner() {
           className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 animate-spin text-dim"
         />
       ) : (
-        <kbd className="data pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded-xs border border-line px-1.5 py-0.5 text-2xs text-dim">
+        <kbd className="data pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded-xs border border-line px-1.5 py-0.5 text-2xs text-dim pointer-coarse:hidden">
           /
         </kbd>
       )}
@@ -193,7 +197,7 @@ function SearchFieldInner() {
                       runSearch(term)
                     }}
                     onMouseEnter={() => setActive(index)}
-                    className={`group/recent flex items-center gap-3 px-3 py-2 transition-colors ${
+                    className={`group/recent flex items-center gap-3 px-3 py-2 transition-colors pointer-coarse:py-1 ${
                       index === active ? 'bg-raise' : ''
                     }`}
                   >
@@ -210,7 +214,7 @@ function SearchFieldInner() {
                         event.stopPropagation()
                         forget(term)
                       }}
-                      className="grid size-5 shrink-0 place-items-center rounded-xs text-dim opacity-0 transition-colors hover:text-flare group-hover/recent:opacity-100"
+                      className="grid size-5 shrink-0 place-items-center rounded-xs text-dim opacity-0 transition-colors group-hover/recent:opacity-100 hover:text-flare pointer-coarse:size-10 pointer-coarse:opacity-100"
                     >
                       <X size={11} />
                     </button>
@@ -234,7 +238,7 @@ function SearchFieldInner() {
                       choose(item)
                     }}
                     onMouseEnter={() => setActive(index)}
-                    className={`flex items-center gap-3 px-3 py-2 transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2 transition-colors active:bg-raise ${
                       index === active ? 'bg-raise' : ''
                     }`}
                   >
@@ -281,7 +285,7 @@ function SearchFieldInner() {
                 event.preventDefault()
                 seeAll()
               }}
-              className="group/all flex w-full items-center gap-2.5 border-t border-line px-3 py-2.5 text-left transition-colors hover:bg-raise"
+              className="group/all flex w-full items-center gap-2.5 border-t border-line px-3 py-2.5 text-left transition-colors hover:bg-raise active:bg-raise pointer-coarse:py-3.5"
             >
               <span className="label shrink-0 text-2xs text-dim">See all</span>
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-paper">

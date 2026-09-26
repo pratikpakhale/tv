@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { Fraunces, Geist_Mono, Inter } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
+import { SerwistProvider } from '@serwist/turbopack/react'
 import { BRAND, DEFAULT_TITLE, DESCRIPTION } from '@/lib/brand'
 import { CLERK_APPEARANCE } from '@/lib/clerk-appearance'
+import { SPLASH_SCREENS, splashUrl } from '@/lib/splash'
 import { Setup } from '@/components/Setup'
 import { Providers } from './providers'
 import './globals.css'
@@ -26,7 +28,6 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   applicationName: BRAND,
   alternates: { canonical: '/' },
-  manifest: '/site.webmanifest',
   icons: {
     icon: { url: '/favicon.svg', type: 'image/svg+xml' },
     apple: '/apple-touch-icon.png',
@@ -35,8 +36,17 @@ export const metadata: Metadata = {
     title: BRAND,
     capable: true,
     statusBarStyle: 'black-translucent',
+    startupImage: SPLASH_SCREENS.map((screen) => ({
+      url: splashUrl(screen),
+      media: screen.media,
+    })),
   },
-  other: { 'mobile-web-app-capable': 'yes' },
+  formatDetection: { telephone: false },
+  /* `appleWebApp.capable` above emits the standard `mobile-web-app-capable`,
+     which is all Safari 16.4 and newer reads. Older iOS only launches
+     standalone off the `apple-` prefixed spelling, and Next no longer writes
+     it, so it is set by hand rather than duplicating the standard one. */
+  other: { 'apple-mobile-web-app-capable': 'yes' },
   openGraph: {
     type: 'website',
     siteName: BRAND,
@@ -60,9 +70,12 @@ export const metadata: Metadata = {
   },
 }
 
+/* `cover` hands the notch and home-indicator areas to the page; every edge
+   that touches them pads itself with the `*-safe` utilities in globals.css. */
 export const viewport: Viewport = {
   themeColor: '#0B0E14',
   colorScheme: 'dark',
+  viewportFit: 'cover',
 }
 
 const STRUCTURED_DATA = {
@@ -99,9 +112,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {missing.length ? (
           <Setup missing={missing} />
         ) : (
-          <ClerkProvider appearance={CLERK_APPEARANCE}>
-            <Providers>{children}</Providers>
-          </ClerkProvider>
+          <SerwistProvider
+            swUrl="/serwist/sw.js"
+            disable={process.env.NODE_ENV === 'development'}
+            reloadOnOnline={false}
+          >
+            <ClerkProvider appearance={CLERK_APPEARANCE}>
+              <Providers>{children}</Providers>
+            </ClerkProvider>
+          </SerwistProvider>
         )}
       </body>
     </html>

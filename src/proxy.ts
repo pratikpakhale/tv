@@ -5,7 +5,7 @@ const CONFIGURED = Boolean(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY,
 )
 
-const PUBLIC_PATH = /^\/(sign-in|sign-up)(\/|$)/
+const PUBLIC_PATH = /^\/(sign-in|sign-up|~offline)(\/|$)/
 
 const guard = clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl

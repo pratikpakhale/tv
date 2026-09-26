@@ -64,11 +64,12 @@ export function EpisodeDrawer({
       <aside
         inert={!open}
         aria-label="Episodes"
-        className={`absolute inset-y-0 right-0 z-40 flex w-full max-w-md flex-col border-l border-line bg-ink/95 backdrop-blur-xl transition-transform duration-300 ease-out-soft ${
-          open ? 'translate-x-0' : 'translate-x-full'
+        className={`absolute inset-x-0 bottom-0 z-40 flex h-[80%] flex-col rounded-t-lg border-t border-line bg-ink/95 backdrop-blur-xl transition-transform duration-300 ease-out-soft sm:top-0 sm:left-auto sm:h-auto sm:max-h-none sm:w-full sm:max-w-md sm:rounded-none sm:border-t-0 sm:border-l ${
+          open ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-x-full sm:translate-y-0'
         }`}
       >
-        <header className="flex shrink-0 items-center gap-3 px-5 pt-5 pb-3">
+        <div aria-hidden className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-line sm:hidden" />
+        <header className="flex shrink-0 items-center gap-3 px-5 pt-3 pb-3 sm:pt-5">
           <h2 className="display flex-1 truncate text-lg font-semibold text-paper">
             Episodes
           </h2>
@@ -76,7 +77,7 @@ export function EpisodeDrawer({
             type="button"
             onClick={onClose}
             aria-label="Close episodes"
-            className="grid size-8 place-items-center rounded-xs text-dim transition-colors hover:text-paper"
+            className="grid size-10 place-items-center rounded-xs text-dim transition-colors hover:text-paper active:opacity-60 sm:size-8"
           >
             <X size={16} />
           </button>
@@ -89,7 +90,7 @@ export function EpisodeDrawer({
               type="button"
               onClick={() => setActive(item.season_number)}
               aria-pressed={active === item.season_number}
-              className={`data shrink-0 rounded-xs border px-2.5 py-1 text-2xs transition-colors ${
+              className={`data shrink-0 rounded-xs border px-2.5 py-1 text-2xs transition-colors pointer-coarse:px-3.5 pointer-coarse:py-2 ${
                 active === item.season_number
                   ? 'border-amber bg-amber text-ink'
                   : 'border-line text-mist hover:border-mist/40 hover:text-paper'
@@ -102,7 +103,7 @@ export function EpisodeDrawer({
 
         <ul
           ref={list}
-          className="min-h-0 flex-1 divide-y divide-line overflow-y-auto border-t border-line"
+          className="min-h-0 flex-1 divide-y divide-line overflow-y-auto overscroll-contain border-t border-line pb-safe"
         >
           {query.isPending &&
             Array.from({ length: 8 }, (_, index) => (
@@ -122,7 +123,7 @@ export function EpisodeDrawer({
                   }
                   aria-current={playing ? 'true' : undefined}
                   className={`group flex w-full items-center gap-3 px-5 py-3 text-left transition-colors ${
-                    playing ? 'bg-surface' : 'hover:bg-surface/50'
+                    playing ? 'bg-surface' : 'hover:bg-surface/50 active:bg-surface/50'
                   }`}
                 >
                   <span

@@ -48,14 +48,18 @@ function playableSeasons(detail?: TitleDetail) {
   )
 }
 
+/* Phones get a captioned, full-width strip of these under the title; from
+   `sm` they are the compact icon cluster beside it. */
 function ChromeButton({
   label,
+  caption,
   hint,
   onClick,
   disabled,
   children,
 }: {
   label: string
+  caption: string
   hint?: string
   onClick: () => void
   disabled?: boolean
@@ -68,12 +72,18 @@ function ChromeButton({
       disabled={disabled}
       aria-label={label}
       title={hint ? `${label} (${hint})` : label}
-      className="grid size-9 place-items-center rounded-xs border border-line bg-surface text-mist transition-colors hover:border-mist/40 hover:text-paper disabled:opacity-25 disabled:hover:border-line disabled:hover:text-mist"
+      className="flex h-11 flex-1 flex-col items-center justify-center gap-1 rounded-xs border border-line bg-surface text-mist transition hover:border-mist/40 hover:text-paper active:scale-[0.96] disabled:opacity-25 disabled:hover:border-line disabled:hover:text-mist sm:size-9 sm:flex-none"
     >
       {children}
+      <span aria-hidden className="text-[0.625rem] leading-none font-medium sm:hidden">
+        {caption}
+      </span>
     </button>
   )
 }
+
+/* A phone on its side has no height to spare for chrome. */
+const PHONE_LANDSCAPE = '(orientation: landscape) and (max-height: 500px)'
 
 function Watch({
   mediaType,
@@ -104,6 +114,7 @@ function Watch({
   const [panel, setPanel] = useState<Panel | null>(null)
   const [collapsed, setCollapsed] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
+  const [canFullscreen, setCanFullscreen] = useState(false)
 
   const togglePanel = useCallback(
     (name: Panel) => setPanel((current) => (current === name ? null : name)),
@@ -229,10 +240,21 @@ function Watch({
     else void document.documentElement.requestFullscreen?.().catch(() => {})
   }, [])
 
+  /* iPhone has no page fullscreen at all, so the button would do nothing.
+     The embed's own fullscreen still works there, through the video element. */
   useEffect(() => {
+    setCanFullscreen(Boolean(document.fullscreenEnabled))
     const sync = () => setFullscreen(Boolean(document.fullscreenElement))
     document.addEventListener('fullscreenchange', sync)
     return () => document.removeEventListener('fullscreenchange', sync)
+  }, [])
+
+  useEffect(() => {
+    const query = window.matchMedia(PHONE_LANDSCAPE)
+    const sync = () => setCollapsed(query.matches)
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
   }, [])
 
   useEffect(() => {
@@ -254,7 +276,7 @@ function Watch({
           setCollapsed((value) => !value)
           return
         case 'f':
-          toggleFullscreen()
+          if (canFullscreen) toggleFullscreen()
           return
         case 'n':
           if (hasNext) step(1)
@@ -267,6 +289,7 @@ function Watch({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [
+    canFullscreen,
     exit,
     hasNext,
     hasPrev,
@@ -287,7 +310,7 @@ function Watch({
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-clip bg-black">
-      <header className="relative z-10 shrink-0 border-b border-line bg-ink">
+      <header className="touch-chrome relative z-10 shrink-0 border-b border-line bg-ink pt-safe pr-safe pl-safe">
         {collapsed ? (
           <button
             type="button"
@@ -295,18 +318,18 @@ function Watch({
             aria-expanded={false}
             aria-label="Show controls"
             title="Show controls (C)"
-            className="flex h-4 w-full items-center justify-center text-dim transition-colors hover:text-paper"
+            className="flex h-4 w-full items-center justify-center text-dim transition-colors hover:text-paper pointer-coarse:h-7"
           >
             <ChevronDown size={12} />
           </button>
         ) : (
-          <div className="flex items-center gap-3 px-4 py-2.5 md:gap-5 md:px-6">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2.5 px-3 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-4 md:gap-5 md:px-6">
             <button
               type="button"
               onClick={exit}
               aria-label="Back to title"
               title="Back to title (Esc)"
-              className="grid size-9 shrink-0 place-items-center rounded-xs text-mist transition-colors hover:text-paper"
+              className="grid size-10 shrink-0 place-items-center rounded-xs text-mist transition-colors hover:text-paper active:opacity-60 sm:size-9"
             >
               <ArrowLeft size={18} />
             </button>
@@ -326,11 +349,12 @@ function Watch({
               />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="order-last flex basis-full items-center gap-2 empty:hidden sm:order-none sm:basis-auto sm:shrink-0">
               {isSeries && (
                 <>
                   <ChromeButton
                     label="Previous episode"
+                    caption="Previous"
                     hint="P"
                     onClick={() => step(-1)}
                     disabled={!hasPrev}
@@ -339,6 +363,7 @@ function Watch({
                   </ChromeButton>
                   <ChromeButton
                     label="Next episode"
+                    caption="Next"
                     hint="N"
                     onClick={() => step(1)}
                     disabled={!hasNext}
@@ -347,6 +372,7 @@ function Watch({
                   </ChromeButton>
                   <ChromeButton
                     label="Episodes"
+                    caption="Episodes"
                     hint="E"
                     onClick={() => togglePanel('episodes')}
                   >
@@ -358,6 +384,7 @@ function Watch({
               {!isTrailer && (
                 <ChromeButton
                   label="Source"
+                  caption="Source"
                   hint="S"
                   onClick={() => togglePanel('source')}
                 >
@@ -365,25 +392,28 @@ function Watch({
                 </ChromeButton>
               )}
 
-              <ChromeButton
-                label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-                hint="F"
-                onClick={toggleFullscreen}
-              >
-                {fullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
-              </ChromeButton>
-
-              <button
-                type="button"
-                onClick={() => setCollapsed(true)}
-                aria-expanded
-                aria-label="Hide controls"
-                title="Hide controls (C)"
-                className="ml-1 grid size-9 shrink-0 place-items-center rounded-xs text-dim transition-colors hover:text-paper"
-              >
-                <ChevronUp size={16} />
-              </button>
+              {canFullscreen && (
+                <ChromeButton
+                  label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                  caption={fullscreen ? 'Exit' : 'Fullscreen'}
+                  hint="F"
+                  onClick={toggleFullscreen}
+                >
+                  {fullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                </ChromeButton>
+              )}
             </div>
+
+            <button
+              type="button"
+              onClick={() => setCollapsed(true)}
+              aria-expanded
+              aria-label="Hide controls"
+              title="Hide controls (C)"
+              className="grid size-10 shrink-0 place-items-center rounded-xs text-dim transition-colors hover:text-paper active:opacity-60 sm:size-9"
+            >
+              <ChevronUp size={16} />
+            </button>
           </div>
         )}
       </header>

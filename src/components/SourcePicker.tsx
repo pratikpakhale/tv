@@ -43,11 +43,12 @@ export function SourcePicker({
       <aside
         inert={!open}
         aria-label="Source"
-        className={`absolute inset-y-0 right-0 z-40 flex w-full max-w-xs flex-col border-l border-line bg-ink/95 backdrop-blur-xl transition-transform duration-300 ease-out-soft ${
-          open ? 'translate-x-0' : 'translate-x-full'
+        className={`absolute inset-x-0 bottom-0 z-40 flex max-h-[75%] flex-col rounded-t-lg border-t border-line bg-ink/95 backdrop-blur-xl transition-transform duration-300 ease-out-soft sm:top-0 sm:left-auto sm:h-auto sm:max-h-none sm:w-full sm:max-w-xs sm:rounded-none sm:border-t-0 sm:border-l ${
+          open ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-x-full sm:translate-y-0'
         }`}
       >
-        <header className="flex shrink-0 items-center gap-3 px-5 pt-5 pb-3">
+        <div aria-hidden className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-line sm:hidden" />
+        <header className="flex shrink-0 items-center gap-3 px-5 pt-3 pb-3 sm:pt-5">
           <h2 className="display flex-1 truncate text-lg font-semibold text-paper">
             Source
           </h2>
@@ -55,7 +56,7 @@ export function SourcePicker({
             type="button"
             onClick={onClose}
             aria-label="Close sources"
-            className="grid size-8 place-items-center rounded-xs text-dim transition-colors hover:text-paper"
+            className="grid size-10 place-items-center rounded-xs text-dim transition-colors hover:text-paper active:opacity-60 sm:size-8"
           >
             <X size={16} />
           </button>
@@ -69,7 +70,7 @@ export function SourcePicker({
           .
         </p>
 
-        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto border-t border-line">
+        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto overscroll-contain border-t border-line pb-safe">
           {sources.map((source) => {
             const active = source.id === activeId
             const disabled = !playable(source)
@@ -81,8 +82,8 @@ export function SourcePicker({
                   onClick={() => onSelect(source.id)}
                   disabled={disabled}
                   aria-current={active ? 'true' : undefined}
-                  className={`flex w-full items-center gap-3 px-5 py-3 text-left transition-colors ${
-                    active ? 'bg-surface' : 'enabled:hover:bg-surface/50'
+                  className={`flex w-full items-center gap-3 px-5 py-3 text-left transition-colors pointer-coarse:py-3.5 ${
+                    active ? 'bg-surface' : 'enabled:hover:bg-surface/50 enabled:active:bg-surface/50'
                   } disabled:opacity-40`}
                 >
                   <span

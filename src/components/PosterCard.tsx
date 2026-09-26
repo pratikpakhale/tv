@@ -32,9 +32,9 @@ export function PosterCard({
   return (
     <Link
       href={href ?? `/title/${media}/${id}`}
-      className="group block w-full focus-visible:outline-offset-4"
+      className="group block w-full touch-manipulation focus-visible:outline-offset-4"
     >
-      <div className="relative overflow-hidden rounded-sm bg-surface ring-1 ring-line transition duration-300 ease-out-soft group-hover:ring-mist/40">
+      <div className="relative overflow-hidden rounded-sm bg-surface ring-1 ring-line transition duration-300 ease-out-soft group-hover:ring-mist/40 group-active:scale-[0.97] group-active:duration-100">
         <div className="aspect-[2/3]">
           {src ? (
             <img

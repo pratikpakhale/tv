@@ -41,7 +41,7 @@ function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
     <div className="flex flex-wrap items-center gap-2">
       <Link
         href={watchHref(media, detail.id, resume?.season, resume?.episode)}
-        className="label inline-flex items-center gap-2 rounded-xs bg-amber px-4 py-2 text-2xs text-ink transition-opacity hover:opacity-90"
+        className="label inline-flex h-12 basis-full items-center justify-center gap-2 rounded-xs bg-amber px-4 text-2xs text-ink transition hover:opacity-90 active:scale-[0.98] sm:h-auto sm:basis-auto sm:py-2"
       >
         <Play size={12} className="fill-ink" />
         {!resume
@@ -64,7 +64,8 @@ function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
             year: yearOf(detail),
           })
         }
-        className="label inline-flex items-center gap-2 rounded-xs border border-line px-4 py-2 text-2xs text-mist transition-colors hover:border-mist/40 hover:text-paper"
+        aria-pressed={isSaved}
+        className={`label inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xs border border-line px-4 text-2xs text-mist transition hover:border-mist/40 hover:text-paper active:scale-[0.97] sm:h-auto sm:flex-none sm:py-2 ${isSaved ? 'text-paper' : ''}`}
       >
         {isSaved ? <BookmarkCheck size={12} /> : <Bookmark size={12} />}
         {isSaved ? 'Saved' : 'Save'}
@@ -73,7 +74,7 @@ function Actions({ detail, media }: { detail: TitleDetail; media: MediaType }) {
       {trailer && (
         <Link
           href={trailerHref(media, detail.id)}
-          className="label inline-flex items-center gap-2 rounded-xs border border-line px-4 py-2 text-2xs text-mist transition-colors hover:border-mist/40 hover:text-paper"
+          className="label inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xs border border-line px-4 text-2xs text-mist transition hover:border-mist/40 hover:text-paper active:scale-[0.97] sm:h-auto sm:flex-none sm:py-2"
         >
           <Clapperboard size={12} />
           Trailer
@@ -146,14 +147,14 @@ function Episodes({ detail }: { detail: TitleDetail }) {
 
   return (
     <section className="space-y-4">
-      <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
+      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:px-0">
         {seasons.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setActive(item.season_number)}
             aria-pressed={active === item.season_number}
-            className={`data shrink-0 rounded-xs border px-2.5 py-1 text-2xs transition-colors ${
+            className={`data shrink-0 rounded-xs border px-2.5 py-1 text-2xs transition-colors pointer-coarse:px-3.5 pointer-coarse:py-2 ${
               active === item.season_number
                 ? 'border-amber bg-amber text-ink'
                 : 'border-line text-mist hover:border-mist/40 hover:text-paper'
@@ -184,13 +185,13 @@ function Episodes({ detail }: { detail: TitleDetail }) {
                   ),
                 )
               }
-              className="group flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-surface/50"
+              className="group flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-surface/50 active:bg-surface/50"
             >
-              <span className="data w-10 shrink-0 text-center text-2xs text-dim">
+              <span className="data hidden w-10 shrink-0 text-center text-2xs text-dim sm:block">
                 {String(episode.episode_number).padStart(2, '0')}
               </span>
 
-              <div className="relative hidden aspect-video w-28 shrink-0 overflow-hidden rounded-xs bg-surface sm:block">
+              <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-xs bg-surface">
                 {still(episode.still_path) && (
                   <img
                     src={still(episode.still_path)!}
@@ -205,7 +206,10 @@ function Episodes({ detail }: { detail: TitleDetail }) {
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-paper/90 group-hover:text-paper">
+                <p className="line-clamp-2 text-sm font-medium text-paper/90 group-hover:text-paper sm:truncate">
+                  <span className="data mr-1.5 text-2xs text-dim sm:hidden">
+                    {String(episode.episode_number).padStart(2, '0')}
+                  </span>
                   {episode.name}
                 </p>
                 <Timecode
@@ -270,26 +274,24 @@ export default function TitlePage() {
     <div className="space-y-10">
       <header className="relative">
         {hero && (
-          <div className="absolute inset-x-0 -top-6 h-[46vh] overflow-hidden md:-mx-8">
+          <div className="absolute inset-x-0 -top-5 -mx-4 h-[52vh] overflow-hidden md:-top-6 md:-mx-8 md:h-[46vh]">
             <img
               src={hero}
               alt=""
-              className="h-full w-full object-cover opacity-25"
+              className="h-full w-full object-cover opacity-45 md:opacity-25"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-transparent" />
           </div>
         )}
 
-        <div className="relative flex flex-col gap-5 pt-[18vh] sm:flex-row sm:items-end sm:gap-6">
-          {art && (
-            <img
-              src={art}
-              alt=""
-              className="w-28 shrink-0 rounded-sm ring-1 ring-line sm:w-40"
-            />
-          )}
+        {/* Phones: poster and title side by side, actions full width beneath,
+            within thumb reach. From `sm`, actions move under the title. */}
+        <div className="relative grid grid-cols-[6.5rem_minmax(0,1fr)] items-end gap-x-4 gap-y-5 pt-[24vh] sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-6 sm:gap-y-4 sm:pt-[18vh]">
+          <div className="aspect-[2/3] overflow-hidden rounded-sm bg-surface shadow-2xl shadow-ink ring-1 ring-line sm:row-span-2">
+            {art && <img src={art} alt="" className="h-full w-full object-cover" />}
+          </div>
 
-          <div className="min-w-0 flex-1 space-y-3">
+          <div className="min-w-0 space-y-3">
             <h1 className="display text-2xl font-semibold sm:text-3xl">
               {titleOf(detail)}
             </h1>
@@ -305,7 +307,9 @@ export default function TitlePage() {
                 score,
               ]}
             />
+          </div>
 
+          <div className="col-span-2 sm:col-span-1 sm:col-start-2">
             <Actions detail={detail} media={mediaType} />
           </div>
         </div>

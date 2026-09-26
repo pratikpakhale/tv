@@ -132,8 +132,12 @@ and social crawlers need lives in `public/`:
 | `icon-192.png`, `icon-512.png`              | web app manifest, installed app, maskable   |
 | `icon-maskable.svg`                         | vector source for the PNGs above            |
 | `og.png`                                    | link previews (1200×630)                    |
-| `site.webmanifest`                          | installability, standalone display          |
 | `robots.txt`                                | crawl rules — everything is disallowed      |
+
+The web app manifest is `src/app/manifest.ts`, served at
+`/manifest.webmanifest`. iOS launch screens are drawn at build time by
+`src/app/splash/[size]/route.tsx`, one per device in `src/lib/splash.ts` — add
+a row there when Apple ships a new screen size.
 
 Set `SITE_URL` before a production build. It becomes the `metadataBase` in
 `src/app/layout.tsx`, which turns `og:image`, `og:url` and `canonical` into
@@ -144,6 +148,21 @@ Because pages render on the client, routes set their own `document.title` at
 runtime through `useDocumentTitle` in `src/lib/seo.ts`. Per-title metadata for
 crawlers arrives when routes convert to server components — see
 [ADR 0001](docs/adr/0001-adopt-a-server-tier.md).
+
+## Installing
+
+The app is a PWA: on iPhone and iPad, **Share → Add to Home Screen**; on
+Android and desktop Chromium, the install button the app offers (or the one in
+the address bar). Installed, it runs full screen with its own launch screen,
+and the shell pads itself clear of the notch and home indicator.
+
+A service worker built by [Serwist](https://serwist.pages.dev)
+(`src/app/sw.ts`, served from `/serwist/sw.js`) precaches the build and keeps
+recently used catalog responses and artwork, so pages you have opened still
+load offline; anything else falls back to `/~offline`. The library endpoint is
+never cached — the sync loop owns its freshness. Playback always needs the
+network. The worker is disabled under `npm run dev`; use `npm run build && npm
+run start` to try it.
 
 ## Deploying
 

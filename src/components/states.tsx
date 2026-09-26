@@ -13,7 +13,7 @@ export function PosterSkeleton() {
 
 export function SkeletonRow({ count = 8 }: { count?: number }) {
   return (
-    <div className="no-scrollbar flex gap-3 overflow-hidden">
+    <div className="no-scrollbar -mx-4 flex gap-3 overflow-hidden px-4 md:mx-0 md:px-0">
       {Array.from({ length: count }, (_, index) => (
         <div key={index} className="w-[122px] shrink-0 sm:w-[136px] lg:w-[150px]">
           <PosterSkeleton />

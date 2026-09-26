@@ -55,8 +55,8 @@ function SourceRow({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 border-b border-line px-3 py-2.5 transition-colors last:border-b-0 ${
-        selected ? 'bg-surface' : 'hover:bg-surface/50'
+      className={`flex cursor-pointer items-center gap-3 border-b border-line px-3 py-2.5 transition-colors last:border-b-0 pointer-coarse:py-3.5 ${
+        selected ? 'bg-surface' : 'hover:bg-surface/50 active:bg-surface/50'
       }`}
     >
       <input
@@ -187,7 +187,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={pending || !dirty}
-            className="label rounded-xs border border-amber bg-amber px-4 py-2 text-2xs text-ink transition-opacity disabled:opacity-40"
+            className="label inline-flex items-center rounded-xs border border-amber bg-amber px-4 py-2 text-2xs text-ink transition disabled:opacity-40 not-disabled:active:scale-[0.97] pointer-coarse:min-h-11 pointer-coarse:px-5"
           >
             {pending ? 'Saving…' : 'Save'}
           </button>
